@@ -1,0 +1,890 @@
+<title>GOTI Store</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: monochrome editorial — ink ground, giant condensed type, 1px technical grid, one inverted paper section */
+:root{
+  --ink:#0A0A0A;      /* fundo */
+  --ink-2:#141414;    /* superfícies */
+  --line:#262626;     /* grid / bordas */
+  --mute:#8C8C8C;     /* texto secundário */
+  --paper:#F4F4F2;    /* texto primário / seção invertida */
+  --paper-2:#E4E4E1;  /* card claro */
+  --display:"Archivo","Arial Narrow","Helvetica Neue",Arial,sans-serif;
+  --body:"Geist",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"Geist Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --ease:cubic-bezier(.22,1,.36,1);
+  --ease-io:cubic-bezier(.65,0,.35,1);
+  --gx:max(16px,env(safe-area-inset-left,0px));
+  --gr:max(16px,env(safe-area-inset-right,0px));
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scrollbar-width:none;overflow-x:clip;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html::-webkit-scrollbar,body::-webkit-scrollbar,.drop-grid::-webkit-scrollbar{display:none}
+body{background:var(--ink);color:var(--paper);font-family:var(--body);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+@media (min-width:1440px){body{font-size:17px}}
+section[id]{scroll-margin-top:calc(64px + env(safe-area-inset-top,0px))}
+svg{max-width:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--ink)}
+::selection{background:var(--paper);color:var(--ink)}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+:focus-visible{outline:2px solid var(--paper);outline-offset:3px}
+.wrap{padding-left:var(--gx);padding-right:var(--gr);max-width:1440px;margin-inline:auto}
+.mono{font-family:var(--mono);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase}
+.disp{font-family:var(--display);font-variation-settings:"wdth" 62;font-stretch:62%;font-weight:850;text-transform:uppercase;line-height:.88;letter-spacing:-.01em;text-wrap:balance}
+h1,h2,h3,p{margin:0}
+
+/* grain */
+.grain{position:fixed;inset:0;pointer-events:none;z-index:70;opacity:.06;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* ---------- LOADER ---------- */
+.loader{position:fixed;inset:0;z-index:100;background:var(--ink);display:grid;place-items:center;transition:transform .7s var(--ease-io)}
+.loader.out{transform:translateY(-100%)}
+.loader-word{display:flex;gap:.02em;font-size:clamp(4rem,18vw,9rem);overflow:hidden}
+.loader-word span{display:block;transform:translateY(105%);animation:rise .6s var(--ease) forwards}
+.loader-word span:nth-child(2){animation-delay:.06s}.loader-word span:nth-child(3){animation-delay:.12s}.loader-word span:nth-child(4){animation-delay:.18s}
+.loader-bar{position:absolute;left:50%;bottom:22%;width:min(240px,60vw);height:1px;background:var(--line);transform:translateX(-50%)}
+.loader-bar i{position:absolute;inset:0;background:var(--paper);transform-origin:left;transform:scaleX(0);animation:fill .9s .1s var(--ease-io) forwards}
+.loader-meta{position:absolute;bottom:calc(22% - 28px);left:50%;transform:translateX(-50%);color:var(--mute);white-space:nowrap}
+@keyframes rise{to{transform:none}}
+@keyframes fill{to{transform:scaleX(1)}}
+
+/* ---------- HEADER ---------- */
+.hdr{position:fixed;top:0;left:0;right:0;z-index:50;padding-top:env(safe-area-inset-top,0px);transition:transform .45s var(--ease),background .3s,border-color .3s;border-bottom:1px solid transparent}
+.hdr.solid{background:rgba(10,10,10,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-color:var(--line)}
+.hdr.hide{transform:translateY(-100%)}
+.hdr-in{height:60px;display:flex;align-items:center;gap:clamp(12px,3vw,24px)}
+.logo{flex:none;font-family:var(--display);font-variation-settings:"wdth" 125;font-stretch:125%;font-weight:900;font-size:clamp(1.15rem,4vw,1.35rem);letter-spacing:-.02em;min-height:44px;display:inline-flex;align-items:center}
+.nav{display:flex;gap:clamp(12px,3vw,28px);margin-left:clamp(0px,2vw,16px);min-width:0}
+.nav a{position:relative;display:inline-flex;align-items:center;min-height:44px;font-size:clamp(.82rem,2.6vw,.9rem);color:var(--mute);transition:color .2s;white-space:nowrap}
+.nav a::after{content:"";position:absolute;left:0;right:0;bottom:10px;height:1px;background:var(--paper);transform:scaleX(0);transform-origin:right;transition:transform .35s var(--ease)}
+@media (hover:hover){
+  .nav a:hover{color:var(--paper)}
+  .nav a:hover::after{transform:scaleX(1);transform-origin:left}
+}
+.hdr-r{margin-left:auto;display:flex;align-items:center;gap:18px;flex:none}
+.bag-l{display:none}
+@media (min-width:400px){.bag-l{display:inline}}
+.live{display:none;align-items:center;gap:8px;border:1px solid var(--line);padding:6px 10px;border-radius:99px;transition:border-color .2s}
+.live:hover{border-color:var(--paper)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--paper);position:relative}
+.dot::after{content:"";position:absolute;inset:0;border-radius:50%;background:var(--paper);animation:pulse 2s ease-out infinite}
+@keyframes pulse{0%{transform:scale(1);opacity:.7}100%{transform:scale(2.8);opacity:0}}
+.bag{display:flex;align-items:center;gap:8px;font-size:.9rem;min-height:44px}
+.bag-n{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 6px;border-radius:99px;background:var(--paper);color:var(--ink);font-family:var(--mono);font-size:.7rem;transition:transform .3s var(--ease)}
+.bag-n.bump{animation:bump .45s var(--ease)}
+@keyframes bump{40%{transform:scale(1.35)}}
+@media (min-width:768px){.live{display:flex}}
+
+/* ---------- HERO ---------- */
+.hero{position:relative;min-height:clamp(480px,88svh,860px);display:flex;flex-direction:column;justify-content:flex-end;padding-top:84px;overflow:hidden;border-bottom:1px solid var(--line)}
+.corner{display:flex;justify-content:space-between;gap:12px;color:var(--mute)}
+.rec{display:inline-flex;align-items:center;gap:6px;color:var(--paper)}
+.hero-bottom{position:relative;z-index:2;display:grid;gap:clamp(20px,3vw,32px);padding-block:clamp(28px,5vw,64px)}
+.hero-h{font-size:clamp(3.2rem,12vw,9rem);max-width:10ch}
+.hero-sub{color:var(--mute);max-width:38ch;font-size:clamp(1rem,1.2vw,1.125rem)}
+.hero-ctas{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+@media (max-width:479px){
+  .hero-ctas .btn{flex:1 1 100%;justify-content:center}
+  .hero-ctas .link{flex:1 1 100%;justify-content:center}
+}
+@media (min-width:1024px){
+  .hero-bottom{grid-template-columns:1fr auto;align-items:end}
+}
+/* celular deitado: altura curta, o conteúdo define a altura */
+@media (orientation:landscape) and (max-height:520px){
+  .hero{min-height:auto;padding-top:76px}
+  .hero-h{font-size:clamp(2.6rem,8vw,4.5rem);max-width:none}
+  .hero-bottom{padding-block:24px 32px}
+}
+
+/* buttons */
+.btn{position:relative;display:inline-flex;align-items:center;gap:10px;min-height:52px;padding:0 26px;border:1px solid var(--paper);font-weight:600;font-size:.95rem;overflow:hidden;isolation:isolate;transition:color .35s var(--ease)}
+.btn::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--paper);transform-origin:right;transition:transform .45s var(--ease)}
+.btn-solid{color:var(--ink)}
+.btn-ghost{color:var(--paper)}
+.btn-ghost::before{transform:scaleX(0);transform-origin:left}
+.btn .arr{transition:transform .35s var(--ease)}
+.btn:active{transform:scale(.97)}
+.link{display:inline-flex;align-items:center;gap:8px;min-height:44px;color:var(--mute);transition:color .2s}
+@media (hover:hover){
+  .btn-solid:hover{color:var(--paper)}
+  .btn-solid:hover::before{transform:scaleX(0)}
+  .btn-ghost:hover{color:var(--ink)}
+  .btn-ghost:hover::before{transform:scaleX(1)}
+  .btn:hover .arr{transform:translateX(4px)}
+  .link:hover{color:var(--paper)}
+}
+
+/* ---------- MARQUEE ---------- */
+.marquee{border-bottom:1px solid var(--line);overflow:hidden;height:48px;display:flex;align-items:center}
+.marquee-track{display:flex;width:max-content;animation:mq 40s linear infinite}
+.marquee:hover .marquee-track{animation-play-state:paused}
+.marquee-track span{padding-right:28px;white-space:nowrap;color:var(--paper)}
+.marquee-track b{font-weight:400;color:var(--mute);padding-right:28px}
+@keyframes mq{to{transform:translateX(-50%)}}
+
+/* ---------- SECTIONS ---------- */
+.sec{padding-block:clamp(64px,10vw,128px)}
+.sec-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px 24px;margin-bottom:clamp(28px,4vw,48px)}
+.sec-head h2{font-size:clamp(3rem,9vw,7.5rem)}
+.eyebrow{color:var(--mute);margin-bottom:14px;display:block}
+.sec-meta{display:flex;gap:20px;align-items:center;color:var(--mute)}
+
+/* ---------- CARDS ---------- */
+.card{display:flex;flex-direction:column;gap:12px;min-width:0}
+.media{position:relative;aspect-ratio:4/5;max-width:100%;overflow:hidden;cursor:pointer}
+.t-dark .media,.media.t-dark{background:var(--paper-2)}
+.t-light .media{background:#191919}
+.t-mid .media{background:#CFCFCB}
+.shot{position:absolute;inset:0;display:grid;place-items:center;transition:opacity .5s var(--ease),transform .7s var(--ease)}
+.shot svg{width:74%;height:auto;filter:drop-shadow(0 18px 24px rgba(0,0,0,.18))}
+.shot.back{opacity:0}
+.tag,.code{position:absolute;z-index:2;top:12px;font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+.tag{left:12px;background:var(--ink);color:var(--paper);padding:4px 8px}
+.code{right:12px;color:#6c6c6c;transition:opacity .3s}
+.t-light .code{color:#7a7a7a}
+.code .alt{display:none}
+.quick{position:absolute;left:0;right:0;bottom:0;z-index:3;background:var(--ink);color:var(--paper);padding:12px;display:grid;gap:10px;transform:translateY(101%);transition:transform .4s var(--ease)}
+.media:has(.size:focus-visible) .quick{transform:none}
+.qa-btn{display:none;position:absolute;z-index:2;right:8px;bottom:8px;width:44px;height:44px;place-items:center;background:var(--ink);color:var(--paper);font-size:1.5rem;line-height:1;transition:opacity .2s}
+.qa-x{display:none;flex:none;width:32px;height:32px;margin:-6px -4px -6px 0;place-items:center;color:var(--paper);font-size:.95rem}
+.ql-t{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.info .pd-open{font:inherit;font-weight:500;color:inherit;text-align:left;padding:0}
+.quick-l{display:flex;justify-content:space-between;gap:8px;color:var(--mute)}
+.sizes{display:grid;grid-template-columns:repeat(auto-fit,minmax(40px,1fr));gap:6px}
+.size{min-width:0;min-height:40px;border:1px solid var(--line);font-family:var(--mono);font-size:.75rem;transition:background .2s,color .2s,border-color .2s}
+.size.ok{background:var(--paper);color:var(--ink)}
+/* hover só em dispositivos com mouse (no toque o hover "gruda" depois do tap) */
+@media (hover:hover){
+  .media:hover .shot,.media:focus-within .shot{transform:scale(1.04)}
+  .media:hover .shot.front{opacity:0}
+  .media:hover .shot.back{opacity:1}
+  .media:hover .code .def{display:none}
+  .media:hover .code .alt{display:inline}
+  .media:hover .quick{transform:none}
+  .size:hover{background:var(--paper);color:var(--ink);border-color:var(--paper)}
+}
+/* toque: mesmo "adicionar rápido" do PC; o botão + faz a barra subir sobre a imagem */
+@media (hover:none){
+  .qa-btn{display:grid}
+  .card.qa-open .quick{transform:none}
+  .card.qa-open .qa-btn{opacity:0;pointer-events:none}
+  .quick-l .qs{display:none}
+  .qa-x{display:inline-grid}
+  .size{min-height:44px}
+}
+@media (hover:none) and (max-width:559px){
+  .shop-grid .quick{padding:8px;gap:6px}
+  .shop-grid .sizes{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+.info{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;align-items:baseline}
+.info h3{font-size:clamp(.9rem,2.4vw,.98rem);font-weight:500;overflow-wrap:anywhere}
+.info .col{color:var(--mute);font-size:.88rem}
+.price{font-family:var(--mono);font-size:.85rem;grid-row:1;white-space:nowrap}
+@media (max-width:399px){
+  .shop-grid .info{grid-template-columns:1fr}
+  .shop-grid .price{grid-row:auto}
+}
+
+/* Drop grid: carrossel até 1023px, grid editorial a partir de 1024px */
+.drop-grid{display:grid;grid-auto-flow:column;grid-auto-columns:82%;gap:12px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;padding-bottom:12px;scrollbar-width:none;
+  margin-left:calc(-1 * var(--gx));margin-right:calc(-1 * var(--gr));padding-left:var(--gx);padding-right:var(--gr);scroll-padding-inline:var(--gx) var(--gr)}
+.drop-grid .card{scroll-snap-align:start}
+@media (min-width:560px){.drop-grid{grid-auto-columns:46%;gap:14px}}
+@media (min-width:1024px){
+  .drop-grid{grid-auto-flow:row;grid-template-columns:repeat(4,minmax(0,1fr));overflow:visible;gap:16px;margin-inline:0;padding-inline:0}
+  .drop-grid .card.big{grid-column:span 2;grid-row:span 2}
+  .drop-grid .card.big .media{flex:1;aspect-ratio:auto;min-height:clamp(480px,48vw,720px)}
+  .drop-grid .card.big .shot svg{width:62%}
+}
+@media (min-width:1024px) and (max-width:1279px) and (hover:hover){
+  .drop-grid .card:not(.big) .quick-l{display:none}
+}
+
+/* ---------- DETALHE DA PEÇA ---------- */
+.pd-scrim{position:fixed;inset:0;z-index:84;background:rgba(10,10,10,.45);backdrop-filter:blur(14px) saturate(.8);-webkit-backdrop-filter:blur(14px) saturate(.8);opacity:0;pointer-events:none;transition:opacity .35s var(--ease)}
+.pd-scrim.on{opacity:1;pointer-events:auto}
+.hdr,main,.foot{transition:filter .35s var(--ease)}
+html.pd-lock .hdr,html.pd-lock main,html.pd-lock .foot,html.pd-lock .grain{filter:blur(12px) saturate(.8)}
+.pd{position:fixed;z-index:85;left:0;right:0;bottom:0;max-height:calc(94svh - env(safe-area-inset-top,0px));display:flex;flex-direction:column;overflow:hidden;background:var(--ink-2);border-top:1px solid var(--line);
+  transform:translateY(100%);visibility:hidden;transition:transform .5s var(--ease),visibility 0s .5s}
+.pd.on{transform:none;visibility:visible;transition:transform .5s var(--ease),visibility 0s}
+.pd-grab{flex:none;width:40px;height:4px;border-radius:2px;background:#3a3a3a;margin:10px auto 6px}
+.pd-close{position:absolute;z-index:4;top:12px;right:max(12px,env(safe-area-inset-right,0px));width:44px;height:44px;display:grid;place-items:center;background:var(--ink);color:var(--paper);border:1px solid var(--line);border-radius:50%}
+.pd-in{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;display:grid;scrollbar-width:none}
+.pd-in::-webkit-scrollbar{display:none}
+.pd-stage{position:relative;height:min(52svh,440px);display:grid;place-items:center;overflow:hidden}
+.pd-stage.t-dark{background:var(--paper-2)}
+.pd-stage.t-light{background:#191919}
+.pd-stage.t-mid{background:#CFCFCB}
+.pd-art{display:grid;place-items:center;width:100%;height:100%}
+.pd-art svg{width:auto;height:84%;max-width:80%;filter:drop-shadow(0 18px 24px rgba(0,0,0,.18));animation:pdIn .45s var(--ease)}
+@keyframes pdIn{from{opacity:0;transform:scale(.97)}}
+.pd-views{position:absolute;left:12px;bottom:12px;display:flex;gap:6px}
+.pd-view{min-height:44px;padding:0 14px;background:var(--ink);color:var(--mute);border:1px solid var(--line);font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase}
+.pd-view[aria-pressed="true"]{color:var(--paper);border-color:var(--paper)}
+.pd-body{display:grid;gap:24px;align-content:start;min-width:0;padding:24px max(20px,env(safe-area-inset-right,0px)) calc(28px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px))}
+.pd-top{display:grid;gap:10px}
+.pd-h{font-size:clamp(2.4rem,9vw,3.8rem);max-width:12ch}
+.pd-price{font-family:var(--mono);font-size:1rem}
+.pd-desc{color:var(--mute);max-width:46ch}
+.pd-group{display:grid;gap:10px}
+.pd-label{display:flex;justify-content:space-between;gap:12px;color:var(--mute)}
+.pd-label b{font-weight:500;color:var(--paper)}
+.swatches{display:flex;gap:10px;flex-wrap:wrap}
+.sw{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;transition:border-color .2s}
+.sw i{width:30px;height:30px;border-radius:50%;border:1px solid #3a3a3a}
+.sw[aria-pressed="true"]{border-color:var(--paper)}
+.pd-sizes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.pd-size{min-height:48px;border:1px solid var(--line);font-family:var(--mono);font-size:.85rem;transition:background .2s,color .2s,border-color .2s}
+.pd-size:only-child{grid-column:1/-1}
+.pd-size[aria-pressed="true"]{background:var(--paper);color:var(--ink);border-color:var(--paper)}
+@media (hover:hover){.pd-size:hover,.sw:hover{border-color:#777}}
+.pd-add{width:100%;justify-content:center}
+.pd-msg{min-height:1.3em;font-size:.88rem}
+.pd-acc{border-bottom:1px solid var(--line)}
+.pd-acc details{border-top:1px solid var(--line)}
+.pd-acc summary{min-height:52px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;list-style:none}
+.pd-acc summary::-webkit-details-marker{display:none}
+.pd-acc summary::after{content:"+";font-family:var(--mono);color:var(--mute)}
+.pd-acc details[open] summary::after{content:"−"}
+.pd-acc details p{color:var(--mute);padding-bottom:16px}
+@media (min-width:768px){
+  .pd{left:50%;top:50%;right:auto;bottom:auto;width:min(980px,calc(100% - 48px));max-height:min(88svh,760px);border:1px solid var(--line);
+    opacity:0;transform:translate(-50%,-47%) scale(.98);transition:transform .45s var(--ease),opacity .3s,visibility 0s .45s}
+  .pd.on{opacity:1;transform:translate(-50%,-50%);transition:transform .45s var(--ease),opacity .3s,visibility 0s}
+  .pd-grab{display:none}
+  .pd-in{grid-template-columns:1.1fr 1fr}
+  .pd-stage{height:min(88svh,760px);position:sticky;top:0;align-self:start}
+  .pd-body{padding:40px 36px 36px}
+  .pd-h{font-size:clamp(2.6rem,4.4vw,4rem)}
+}
+@media (orientation:landscape) and (max-height:520px){
+  .pd-stage{height:70svh}
+}
+
+/* ---------- SOBRE ---------- */
+.sobre{background:var(--paper);color:var(--ink)}
+.sobre .eyebrow{color:#666}
+.manifesto{font-size:clamp(2.2rem,6.4vw,5.6rem);max-width:16ch;margin-bottom:clamp(40px,6vw,80px)}
+.manifesto .w{opacity:.14;transition:opacity .25s linear}
+.manifesto .w.on{opacity:1}
+.sobre-grid{display:grid;gap:32px}
+.sobre-img{aspect-ratio:4/3;max-width:100%;background:#d9d9d6;position:relative;display:grid;place-items:center;color:#666;overflow:hidden}
+.sobre-img{background:#111}
+.sobre-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:62% 38%;filter:grayscale(1) contrast(1.05)}
+.sobre-img .corner{position:absolute;z-index:1;left:16px;right:16px;bottom:14px;color:var(--paper);text-shadow:0 1px 8px rgba(0,0,0,.6)}
+.sobre-txt{display:grid;gap:18px;align-content:start;max-width:58ch;font-size:1.05rem}
+.sobre-txt p{color:#333}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid #c9c9c6;margin-top:12px}
+.stat{padding:18px 10px 0 0;display:grid;gap:4px;min-width:0}
+.stat + .stat{padding-left:clamp(10px,2vw,14px);border-left:1px solid #c9c9c6}
+.stat b{font-family:var(--display);font-variation-settings:"wdth" 125;font-stretch:125%;font-weight:800;font-size:clamp(1.2rem,5vw,2.4rem);line-height:1;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.stat span{color:#666;font-size:.7rem}
+.ph-note{font-family:var(--mono);font-size:.75rem;color:#777}
+@media (min-width:768px){.sobre-img{aspect-ratio:16/9}}
+@media (min-width:1024px){.sobre-grid{grid-template-columns:1.1fr 1fr;gap:64px}.sobre-img{aspect-ratio:4/3}}
+
+/* ---------- LOJA ---------- */
+.filters{position:relative;background:var(--ink);border-block:1px solid var(--line);margin-bottom:24px}
+.filters-in{display:flex;align-items:center;gap:12px;min-height:60px}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0;padding-block:8px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;min-height:44px;padding:0 16px;border:1px solid var(--line);border-radius:99px;font-size:.88rem;color:var(--mute);transition:all .25s var(--ease)}
+@media (hover:hover){.chip:hover{color:var(--paper);border-color:#555}}
+.chip[aria-pressed="true"]{background:var(--paper);color:var(--ink);border-color:var(--paper)}
+.sort{flex:none;display:flex;align-items:center;gap:8px;color:var(--mute)}
+.sort select{background:var(--ink-2);color:var(--paper);border:1px solid var(--line);min-height:44px;padding:0 10px;font:inherit;font-size:16px;max-width:9.5rem}
+.sort label{display:none}
+@media (min-width:600px){.sort label{display:inline}.sort select{font-size:.9rem}}
+.shop-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 10px}
+@media (min-width:768px){.shop-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:36px 14px}}
+@media (min-width:1024px){.shop-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:40px 16px}}
+.shop-foot{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:clamp(32px,5vw,48px);color:var(--mute)}
+.card.enter{animation:cardIn .5s var(--ease) both}
+@keyframes cardIn{from{opacity:0;transform:translateY(16px)}}
+
+/* ---------- LIVE ---------- */
+.livebar{border-block:1px solid var(--line)}
+.livebar-in{display:grid;gap:clamp(24px,4vw,64px);padding-block:clamp(40px,6vw,80px);align-items:center}
+.livebar-in > *{min-width:0}
+.live-thumb{position:relative;aspect-ratio:16/9;max-width:100%;background:repeating-linear-gradient(135deg,#131313 0 14px,#101010 14px 28px);border:1px solid var(--line);display:grid;place-items:center;overflow:hidden}
+.play{width:68px;height:68px;border-radius:50%;border:1px solid var(--paper);display:grid;place-items:center;transition:transform .35s var(--ease),background .3s}
+.play svg{width:20px;margin-left:4px}
+@media (hover:hover){
+  .live-thumb:hover .play{transform:scale(1.08);background:var(--paper)}
+  .live-thumb:hover .play path{fill:var(--ink)}
+}
+.live-thumb .corner{position:absolute;left:14px;right:14px;top:12px}
+.live-h{font-size:clamp(2.2rem,6vw,4.4rem);margin-block:10px 14px}
+.coupon{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px 12px;border:1px dashed #555;padding:10px 14px;margin-top:18px;max-width:100%}
+@media (min-width:768px){.livebar-in{grid-template-columns:1fr 1.2fr}}
+
+/* ---------- FOOTER ---------- */
+.foot{padding-top:clamp(64px,9vw,112px);overflow:hidden}
+.news{display:grid;gap:clamp(24px,4vw,64px);padding-bottom:clamp(40px,6vw,64px);border-bottom:1px solid var(--line)}
+.news > *{min-width:0}
+.news h2{font-size:clamp(2.4rem,7vw,5.2rem);max-width:12ch}
+.news form{display:grid;gap:12px;align-content:end}
+.field{display:flex;border-bottom:1px solid var(--paper)}
+.field input{flex:1;min-width:0;background:transparent;border:0;color:var(--paper);font:inherit;font-size:1.1rem;padding:14px 0;outline:none}
+.field input::placeholder{color:#5a5a5a}
+.field button{min-height:52px;padding-left:16px;font-weight:600;display:flex;align-items:center;gap:8px}
+.consent{display:flex;gap:12px;align-items:flex-start;color:var(--mute);font-size:.88rem;padding-block:6px;cursor:pointer}
+.consent input{flex:none;width:20px;height:20px;margin:1px 0 0;accent-color:var(--paper)}
+.form-msg{min-height:1.4em;font-size:.9rem}
+@media (min-width:1024px){.news{grid-template-columns:1fr 1fr}}
+.cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 16px;padding-block:clamp(36px,5vw,56px)}
+.cols h4{margin:0 0 8px;color:var(--mute);font-family:var(--mono);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;font-weight:400}
+.cols ul{list-style:none;margin:0;padding:0;display:grid}
+.cols a{display:inline-flex;align-items:center;min-height:40px;color:#cfcfcf;transition:color .2s}
+@media (hover:hover){.cols a:hover{color:var(--paper)}}
+@media (min-width:768px){.cols{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.legal{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between;color:#5f5f5f;padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))}
+
+/* ---------- DRAWER ---------- */
+.scrim{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity .35s}
+.scrim.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;z-index:90;right:0;top:0;bottom:0;width:min(440px,100%);background:var(--ink-2);border-left:1px solid var(--line);transform:translateX(100%);transition:transform .5s var(--ease);display:flex;flex-direction:column;
+  padding:calc(16px + env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) 20px}
+.drawer.on{transform:none}
+.dr-head{display:flex;justify-content:space-between;align-items:center;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.dr-head h2{font-size:2rem}
+.x{min-width:44px;min-height:44px;display:grid;place-items:center}
+.dr-list{flex:1;overflow:auto;display:grid;align-content:start;gap:14px;padding-block:18px}
+.dr-item{display:grid;grid-template-columns:72px minmax(0,1fr) auto;gap:14px;align-items:center}
+.dr-item .th{aspect-ratio:4/5;display:grid;place-items:center}
+.dr-item .th svg{width:80%}
+.dr-item small{color:var(--mute);display:block}
+.dr-item button{color:var(--mute);font-size:.8rem;min-height:44px;text-decoration:underline;text-underline-offset:3px}
+.dr-empty{color:var(--mute);display:grid;gap:14px;padding-top:24px}
+.dr-foot{border-top:1px solid var(--line);padding-top:16px;display:grid;gap:12px}
+.dr-row{display:flex;justify-content:space-between;color:var(--mute)}
+.dr-foot .btn{justify-content:center}
+
+/* toast */
+.toast{position:fixed;z-index:95;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,calc(100% + 60px));visibility:hidden;background:var(--paper);color:var(--ink);padding:12px 18px;font-size:.9rem;display:flex;gap:10px;align-items:center;transition:transform .45s var(--ease),visibility 0s .45s;max-width:calc(100% - 32px)}
+.toast.on{transform:translate(-50%,0);visibility:visible;transition:transform .45s var(--ease),visibility 0s}
+
+/* reveal (only applied by JS to off-screen elements) */
+.rv{opacity:0;transform:translateY(24px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.rv.in{opacity:1;transform:none}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+  .rv{opacity:1;transform:none}
+  .marquee-track{transform:none}
+  .manifesto .w{opacity:1}
+  .loader{display:none}
+}
+</style>
+
+<div class="grain" aria-hidden="true"></div>
+
+<div class="loader" id="loader" aria-hidden="true">
+  <div class="loader-word disp"><span>G</span><span>O</span><span>T</span><span>I</span></div>
+  <div class="loader-bar"><i></i></div>
+  <div class="loader-meta mono">Carregando drop 001</div>
+</div>
+
+<header class="hdr" id="hdr">
+  <div class="wrap hdr-in">
+    <a href="#top" class="logo" aria-label="GOTI, início">GOTI</a>
+    <nav class="nav" aria-label="Principal">
+      <a href="#loja">Loja</a><a href="#drop">Drops</a><a href="#sobre">Sobre</a>
+    </nav>
+    <div class="hdr-r">
+      <a class="live mono" href="#live"><span class="dot"></span>Ao vivo</a>
+      <button class="bag" id="bagBtn" aria-label="Abrir sacola"><span class="bag-l">Sacola</span> <span class="bag-n" id="bagN">0</span></button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+  <!-- HERO -->
+  <section class="hero" aria-label="Destaque">
+
+    <div class="wrap hero-bottom">
+      <div style="display:grid;gap:16px">
+        <span class="mono" style="color:var(--mute)">Drop 001 · Disponível agora</span>
+        <h1 class="disp hero-h">Veste quem assiste.</h1>
+        <p class="hero-sub">A linha oficial do Yuri22. Peças em edição limitada, pensadas pra quem tá na live desde o começo.</p>
+      </div>
+      <div class="hero-ctas">
+        <a class="btn btn-solid" href="#drop" id="ctaMain">Ver coleção <span class="arr">→</span></a>
+        <a class="link" href="#live">Assistir à live →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- MARQUEE -->
+  <div class="marquee mono" aria-hidden="true">
+    <div class="marquee-track" id="mq"></div>
+  </div>
+
+  <!-- DROP -->
+  <section class="sec" id="drop">
+    <div class="wrap">
+      <div class="sec-head rv-me">
+        <div><span class="eyebrow mono">Lançamento</span><h2 class="disp">Drop 001</h2></div>
+        <div class="sec-meta mono"><span id="dropCount">[ 05 peças ]</span><a class="link" href="#loja">Ver tudo →</a></div>
+      </div>
+      <div class="drop-grid" id="dropGrid"></div>
+    </div>
+  </section>
+
+  <!-- SOBRE -->
+  <section class="sec sobre" id="sobre">
+    <div class="wrap">
+      <span class="eyebrow mono">Sobre a GOTI</span>
+      <p class="disp manifesto" id="manifesto">Para os verdadeiros gotis da live.</p>
+      <div class="sobre-grid">
+        <div class="sobre-img rv-me">
+          <img src="sobre-yuri22.jpg" width="1445" height="1088" loading="lazy" decoding="async" alt="Yuri22 sorrindo, de fone e microfone, durante uma transmissão">
+          <div class="corner mono"><span>Bastidores</span><span>Ao vivo</span></div>
+        </div>
+        <div class="sobre-txt rv-me">
+          <p class="ph-note">[ Significado de GOTI: texto da marca entra aqui ]</p>
+          <p>A GOTI nasceu dentro da live. Cada peça carrega uma referência que só quem acompanha o Yuri22 vai pegar, e um corte que funciona pra qualquer pessoa na rua.</p>
+          <p>Poucas peças por drop, tecido pesado, estampa sem excesso. Quando acaba, acaba.</p>
+          <div class="stats">
+            <div class="stat"><b>2,5M</b><span class="mono">Seguidores</span></div>
+            <div class="stat"><b>01</b><span class="mono">Drop lançado</span></div>
+            <div class="stat"><b>05</b><span class="mono">Peças por drop</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOJA -->
+  <section class="sec" id="loja" style="padding-top:clamp(64px,10vw,128px)">
+    <div class="wrap">
+      <div class="sec-head rv-me" style="margin-bottom:24px">
+        <div><span class="eyebrow mono">Catálogo</span><h2 class="disp">Loja</h2></div>
+      </div>
+    </div>
+    <div class="filters">
+      <div class="wrap filters-in">
+        <div class="chips" role="group" aria-label="Categorias" id="chips">
+          <button class="chip" aria-pressed="true" data-cat="tudo">Tudo</button>
+          <button class="chip" aria-pressed="false" data-cat="camisetas">Camisetas</button>
+          <button class="chip" aria-pressed="false" data-cat="moletons">Moletons</button>
+          <button class="chip" aria-pressed="false" data-cat="acessorios">Acessórios</button>
+        </div>
+        <div class="sort"><label for="sortSel" class="mono">Ordenar</label>
+          <select id="sortSel"><option value="novo">Novidades</option><option value="az">A–Z</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="wrap">
+      <div class="shop-grid" id="shopGrid"></div>
+      <div class="shop-foot">
+        <span class="mono" id="shopCount">8 de 8</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- LIVE -->
+  <section class="livebar" id="live">
+    <div class="wrap livebar-in">
+      <div>
+        <span class="mono" style="display:inline-flex;gap:8px;align-items:center"><span class="dot"></span>Ao vivo agora · YouTube</span>
+        <h2 class="disp live-h">O Yuri tá ao vivo.</h2>
+        <p style="color:var(--mute);max-width:42ch">Durante a live tem cupom exclusivo. Vale só enquanto a transmissão estiver no ar.</p>
+        <div class="coupon mono">Cupom <b style="font-weight:500;color:var(--paper)">[CUPOM-LIVE]</b></div>
+      </div>
+      <a class="live-thumb" href="https://www.youtube.com/@yuri22ofc" target="_blank" rel="noopener noreferrer" aria-label="Assistir à live do Yuri22 no YouTube (abre em nova aba)">
+        <div class="corner mono"><span class="rec"><span class="dot"></span>Live</span><span>[0.000] assistindo</span></div>
+        <span class="play"><svg viewBox="0 0 20 22"><path d="M0 0v22l20-11z" fill="#F4F4F2"/></svg></span>
+      </a>
+    </div>
+  </section>
+</main>
+
+<!-- FOOTER -->
+<footer class="foot">
+  <div class="wrap">
+    <div class="news">
+      <h2 class="disp">Entra na lista. Drop novo chega aqui primeiro.</h2>
+      <form id="newsForm" novalidate>
+        <label class="mono" for="email" style="color:var(--mute)">Seu e-mail</label>
+        <div class="field"><input id="email" type="email" inputmode="email" enterkeyhint="send" autocapitalize="off" spellcheck="false" placeholder="voce@email.com" autocomplete="email"><button type="submit">Inscrever <span>→</span></button></div>
+        <label class="consent" for="lgpd"><input id="lgpd" type="checkbox"> Aceito receber e-mails da GOTI e li a política de privacidade.</label>
+        <p class="form-msg" id="formMsg" role="status"></p>
+      </form>
+    </div>
+    <div class="cols">
+      <div><h4>Loja</h4><ul><li><a href="#loja">Camisetas</a></li><li><a href="#loja">Moletons</a></li><li><a href="#loja">Acessórios</a></li><li><a href="#drop">Drop 001</a></li></ul></div>
+      <div><h4>Ajuda</h4><ul><li><a href="#top">Trocas e devoluções</a></li><li><a href="#top">Envio</a></li><li><a href="#top">Guia de tamanhos</a></li><li><a href="#top">Contato</a></li></ul></div>
+      <div><h4>Social</h4><ul><li><a href="https://www.youtube.com/@yuri22ofc" target="_blank" rel="noopener noreferrer">YouTube</a></li><li><a href="#top">Instagram</a></li><li><a href="#top">TikTok</a></li></ul></div>
+      <div><h4>Legal</h4><ul><li><a href="#top">Privacidade</a></li><li><a href="#top">Termos de uso</a></li></ul></div>
+    </div>
+    <div class="legal mono"><span>© 2026 GOTI · CNPJ 00.000.000/0000-00</span><span>Feito no Brasil</span></div>
+  </div>
+</footer>
+
+<!-- DRAWER -->
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Sacola" aria-hidden="true">
+  <div class="dr-head"><h2 class="disp">Sacola</h2><button class="x" id="closeBag" aria-label="Fechar sacola">✕</button></div>
+  <div class="dr-list" id="drList"></div>
+  <div class="dr-foot">
+    <div class="dr-row"><span>Subtotal</span><span class="mono">R$ —,—</span></div>
+    <div class="dr-row"><span>Frete</span><span class="mono">Calculado no checkout</span></div>
+    <a class="btn btn-solid" href="#top">Finalizar compra <span class="arr">→</span></a>
+  </div>
+</aside>
+
+<!-- DETALHE DA PEÇA -->
+<div class="pd-scrim" id="pdScrim"></div>
+<div class="pd" id="pd" role="dialog" aria-modal="true" aria-labelledby="pdName" aria-hidden="true">
+  <div class="pd-grab" aria-hidden="true"></div>
+  <button class="pd-close" id="pdClose" aria-label="Fechar detalhes">✕</button>
+  <div class="pd-in">
+    <div class="pd-stage" id="pdStage">
+      <span class="tag" id="pdTag" hidden>Novo</span>
+      <div class="pd-art" id="pdArt"></div>
+      <div class="pd-views" role="group" aria-label="Vista da peça">
+        <button class="pd-view" data-view="front" aria-pressed="true">Frente</button>
+        <button class="pd-view" data-view="back" aria-pressed="false">Costas</button>
+      </div>
+    </div>
+    <div class="pd-body">
+      <div class="pd-top">
+        <span class="mono" id="pdCode" style="color:var(--mute)">GOTI/D001</span>
+        <h2 class="disp pd-h" id="pdName">Peça</h2>
+        <span class="pd-price">R$ —,—</span>
+      </div>
+      <p class="pd-desc">[Descrição da peça: texto a definir pela marca.]</p>
+      <div class="pd-group">
+        <div class="pd-label mono"><span>Cor</span><b id="pdColor">—</b></div>
+        <div class="swatches" id="pdSw" role="group" aria-label="Cor"></div>
+      </div>
+      <div class="pd-group">
+        <div class="pd-label mono"><span>Tamanho</span><b id="pdSizeL">Escolha um</b></div>
+        <div class="pd-sizes" id="pdSizes" role="group" aria-label="Tamanho"></div>
+      </div>
+      <div class="pd-group">
+        <button class="btn btn-solid pd-add" id="pdAdd">Adicionar à sacola <span class="arr">→</span></button>
+        <p class="pd-msg" id="pdMsg" role="status"></p>
+      </div>
+      <div class="pd-acc">
+        <details><summary>Material e cuidados</summary><p>[Composição e instruções de lavagem: a definir.]</p></details>
+        <details><summary>Medidas</summary><p>[Tabela de medidas por tamanho: a definir.]</p></details>
+        <details><summary>Envio e trocas</summary><p>Envio para todo o Brasil. Trocas em até 30 dias.</p></details>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"><span>✓</span><span id="toastTxt">Adicionado à sacola</span></div>
+
+<script>
+(() => {
+  const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const $ = s => document.querySelector(s);
+
+  /* ---------- LOADER ---------- */
+  const loader = $('#loader');
+  let seen = false;
+  try { seen = sessionStorage.getItem('goti-seen') === '1'; sessionStorage.setItem('goti-seen','1'); } catch(e){}
+  if (RM || seen) loader.remove();
+  else setTimeout(() => { loader.classList.add('out'); setTimeout(() => loader.remove(), 750); }, 1050);
+
+  /* ---------- PRODUCTS ---------- */
+  const TONES = {
+    dark:  {fill:'#111111', stroke:'#2a2a2a', ink:'#F4F4F2'},
+    light: {fill:'#F4F4F2', stroke:'#cfcfcf', ink:'#0A0A0A'},
+    mid:   {fill:'#4A4A4A', stroke:'#3a3a3a', ink:'#F4F4F2'}
+  };
+  const T = (x,y,s,txt,c,w=900,st=62,extra='') =>
+    `<text x="${x}" y="${y}" text-anchor="middle" fill="${c}" style="font:${w} ${s}px Archivo,'Arial Narrow',sans-serif;font-stretch:${st}%;letter-spacing:-.01em" ${extra}>${txt}</text>`;
+  const M = (x,y,s,txt,c) =>
+    `<text x="${x}" y="${y}" text-anchor="middle" fill="${c}" style="font:500 ${s}px 'Geist Mono',monospace;letter-spacing:.12em">${txt}</text>`;
+
+  function art(kind, tone, side){
+    const t = TONES[tone];
+    const base = `fill="${t.fill}" stroke="${t.stroke}" stroke-width="2" stroke-linejoin="round"`;
+    if (kind === 'tee'){
+      const body = `<path d="M100 30 60 45 10 95l35 40 30-20v205h150V115l30 20 35-40-50-50-40-15c-10 25-30 35-50 35s-40-10-50-35Z" ${base}/>
+        <path d="M100 30c10 25 30 35 50 35s40-10 50-35" fill="none" stroke="${t.stroke}" stroke-width="2"/>`;
+      const print = side==='front'
+        ? T(196,112,15,'GOTI',t.ink)
+        : T(150,190,74,'GOTI',t.ink) + M(150,214,9,'YURI22 · DROP 001',t.ink) + M(150,90,8,'00:14:22',t.ink);
+      return `<svg viewBox="0 0 300 340" aria-hidden="true">${body}${print}</svg>`;
+    }
+    if (kind === 'hoodie'){
+      const body = `<path d="M95 44 55 58 26 170l-6 130 40 5 15-128v143h150V177l15 128 40-5-6-130-29-112-40-14Z" ${base}/>
+        <path d="M105 46c0-50 90-50 90 0-12 26-78 26-90 0Z" ${base}/>
+        <path d="M112 248h76l-10 44h-56Z" fill="none" stroke="${t.stroke}" stroke-width="2"/>`;
+      const print = side==='front'
+        ? T(150,150,38,'GOTI',t.ink)
+        : T(150,175,70,'22',t.ink,900,125) + M(150,200,9,'GOTI · YURI22',t.ink);
+      return `<svg viewBox="0 0 300 340" aria-hidden="true">${body}${print}</svg>`;
+    }
+    if (kind === 'cap'){
+      const body = `<path d="M62 210c0-96 176-96 176 0Z" ${base}/>
+        <path d="M58 208c70 18 150 18 236 2l-6 22c-80 16-160 14-232-6Z" ${base}/>
+        <circle cx="150" cy="125" r="5" fill="${t.stroke}"/>`;
+      const print = side==='front' ? T(150,188,30,'GOTI',t.ink) : M(150,186,10,'YURI22',t.ink) + T(150,168,18,'22',t.ink,900,125);
+      return `<svg viewBox="0 0 300 340" aria-hidden="true">${body}${print}</svg>`;
+    }
+    // tote
+    const body = `<path d="M118 112c0-70 64-70 64 0" fill="none" stroke="${t.stroke}" stroke-width="8"/>
+      <rect x="82" y="110" width="136" height="186" ${base}/>`;
+    const print = side==='front' ? T(150,226,52,'GOTI',t.ink) : M(150,200,9,'FEITO NA LIVE',t.ink) + M(150,218,9,'YURI22',t.ink);
+    return `<svg viewBox="0 0 300 340" aria-hidden="true">${body}${print}</svg>`;
+  }
+
+  const P = [
+    {id:'t01p', n:'Camiseta Oversized 01', c:'Preta',        cat:'camisetas',  k:'tee',    tone:'dark',  drop:1, tag:'Novo', o:1},
+    {id:'h01p', n:'Moletom Canguru 01',    c:'Preto',        cat:'moletons',   k:'hoodie', tone:'dark',  drop:1, tag:'Novo', o:2},
+    {id:'t01b', n:'Camiseta Oversized 01', c:'Branca',       cat:'camisetas',  k:'tee',    tone:'light', drop:1, o:3},
+    {id:'c01p', n:'Boné Dad Hat 01',       c:'Preto',        cat:'acessorios', k:'cap',    tone:'dark',  drop:1, o:4, one:1},
+    {id:'h01g', n:'Moletom Canguru 01',    c:'Grafite',      cat:'moletons',   k:'hoodie', tone:'mid',   drop:1, o:5},
+    {id:'t02g', n:'Camiseta Regular 02',   c:'Grafite',      cat:'camisetas',  k:'tee',    tone:'mid',   o:6},
+    {id:'c01b', n:'Boné Dad Hat 01',       c:'Branco',       cat:'acessorios', k:'cap',    tone:'light', o:7, one:1},
+    {id:'b01b', n:'Ecobag 01',             c:'Branca',       cat:'acessorios', k:'tote',   tone:'light', o:8, one:1},
+  ];
+  const byId = Object.fromEntries(P.map(p => [p.id,p]));
+
+  function card(p, i, big){
+    const sizes = p.one ? ['Único'] : ['P','M','G','GG'];
+    return `<article class="card t-${p.tone}${big?' big':''}" data-id="${p.id}">
+      <div class="media">
+        ${p.tag?`<span class="tag">${p.tag}</span>`:''}
+        <span class="code"><span class="def">GOTI/D001 — ${String(p.o).padStart(2,'0')}</span><span class="alt">Ver peça →</span></span>
+        <div class="shots"><div class="shot front">${art(p.k,p.tone,'front')}</div><div class="shot back">${art(p.k,p.tone,'back')}</div></div>
+        <button class="qa-btn" aria-label="Adicionar rápido: ${p.n}, ${p.c}">+</button>
+        <div class="quick">
+          <div class="quick-l mono"><span class="ql-t">Adicionar rápido</span><span class="qs">${p.one?'Tamanho único':'Tamanho'}</span><button class="qa-x" aria-label="Fechar adicionar rápido">✕</button></div>
+          <div class="sizes">${sizes.map(s=>`<button class="size" data-size="${s}" aria-label="Adicionar ${p.n} ${p.c}, tamanho ${s}">${p.one?'+ Adicionar':s}</button>`).join('')}</div>
+        </div>
+      </div>
+      <div class="info"><h3><button class="pd-open">${p.n}</button></h3><span class="price">R$ —,—</span><span class="col">${p.c}</span></div>
+    </article>`;
+  }
+
+  // Drop
+  const drop = P.filter(p=>p.drop);
+  $('#dropGrid').innerHTML = drop.map((p,i)=>card(p,i,i===0)).join('');
+  $('#dropCount').textContent = `[ ${String(drop.length).padStart(2,'0')} peças ]`;
+
+  // Shop
+  let cat = 'tudo', sort = 'novo';
+  function renderShop(){
+    let list = P.filter(p => cat==='tudo' || p.cat===cat);
+    list = sort==='az' ? [...list].sort((a,b)=>(a.n+a.c).localeCompare(b.n+b.c,'pt')) : [...list].sort((a,b)=>a.o-b.o);
+    const g = $('#shopGrid');
+    g.innerHTML = list.map(p=>card(p)).join('');
+    if (!RM) [...g.children].forEach((el,i)=>{ el.style.animationDelay = (i*50)+'ms'; el.classList.add('enter'); });
+    $('#shopCount').textContent = `${list.length} de ${P.length}`;
+  }
+  renderShop();
+  $('#chips').addEventListener('click', e => {
+    const b = e.target.closest('.chip'); if(!b) return;
+    cat = b.dataset.cat;
+    document.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed', c===b));
+    renderShop();
+  });
+  $('#sortSel').addEventListener('change', e => { sort = e.target.value; renderShop(); });
+
+  /* ---------- CART ---------- */
+  const cart = [];
+  const drawer = $('#drawer'), scrim = $('#scrim'), bagN = $('#bagN');
+  function openBag(){ drawer.classList.add('on'); scrim.classList.add('on'); drawer.setAttribute('aria-hidden','false'); $('#closeBag').focus(); }
+  function closeBag(){ drawer.classList.remove('on'); scrim.classList.remove('on'); drawer.setAttribute('aria-hidden','true'); $('#bagBtn').focus(); }
+  function renderCart(){
+    bagN.textContent = cart.length;
+    bagN.classList.remove('bump'); void bagN.offsetWidth; bagN.classList.add('bump');
+    $('#drList').innerHTML = cart.length ? cart.map((it,i)=>{
+      const p = byId[it.id];
+      const bg = p.tone==='light' ? '#191919' : p.tone==='mid' ? '#CFCFCB' : '#E4E4E1';
+      return `<div class="dr-item"><div class="th" style="background:${bg}">${art(p.k,p.tone,'front')}</div>
+        <div><b style="font-weight:500">${p.n}</b><small>${p.c} · ${it.size==='Único'?'Tamanho único':'Tam. '+it.size}</small><small class="mono">R$ —,—</small></div>
+        <button data-rm="${i}">Remover</button></div>`;
+    }).join('') : `<div class="dr-empty"><p>Sua sacola está vazia.</p><a class="link" href="#drop" id="emptyLink">Ver o Drop 001 →</a></div>`;
+  }
+  renderCart(); bagN.classList.remove('bump');
+  let toastT;
+  function toast(msg){ $('#toastTxt').textContent = msg; $('#toast').classList.add('on'); clearTimeout(toastT); toastT = setTimeout(()=>$('#toast').classList.remove('on'), 2200); }
+
+  function addToCart(p, size){
+    cart.push({id:p.id, size});
+    renderCart();
+    toast(`${p.n} (${p.c}) foi para a sacola`);
+  }
+  const closeQuick = () => document.querySelectorAll('.card.qa-open').forEach(c => c.classList.remove('qa-open'));
+
+  /* ---------- DETALHE DA PEÇA ---------- */
+  const pd = $('#pd'), pdScrim = $('#pdScrim'), pdIn = pd.querySelector('.pd-in');
+  const CAT = {camisetas:'Camisetas', moletons:'Moletons', acessorios:'Acessórios'};
+  const SW = {dark:'#111111', light:'#F4F4F2', mid:'#4A4A4A'};
+  let cur = null, curSize = null, view = 'front', lastFocus = null;
+  function renderPD(){
+    const p = cur, sizes = p.one ? ['Único'] : ['P','M','G','GG'];
+    if (p.one) curSize = 'Único';
+    $('#pdStage').className = 'pd-stage t-' + p.tone;
+    $('#pdArt').innerHTML = art(p.k, p.tone, view);
+    $('#pdTag').hidden = !p.tag;
+    $('#pdCode').textContent = `GOTI/D001 — ${String(p.o).padStart(2,'0')} · ${CAT[p.cat]}`;
+    $('#pdName').textContent = p.n;
+    $('#pdColor').textContent = p.c;
+    $('#pdSw').innerHTML = P.filter(v => v.n === p.n).map(v =>
+      `<button class="sw" data-v="${v.id}" aria-pressed="${v.id===p.id}" aria-label="Cor ${v.c}"><i style="background:${SW[v.tone]}"></i></button>`).join('');
+    $('#pdSizes').innerHTML = sizes.map(s =>
+      `<button class="pd-size" data-s="${s}" aria-pressed="${s===curSize}">${s==='Único'?'Tamanho único':s}</button>`).join('');
+    $('#pdSizeL').textContent = curSize ? curSize : 'Escolha um';
+    pd.querySelectorAll('.pd-view').forEach(b => b.setAttribute('aria-pressed', b.dataset.view === view));
+  }
+  function openPD(id, opener){
+    cur = byId[id]; curSize = null; view = 'front'; lastFocus = opener;
+    $('#pdMsg').textContent = '';
+    renderPD(); closeQuick();
+    pd.classList.add('on'); pdScrim.classList.add('on'); pd.setAttribute('aria-hidden','false');
+    document.documentElement.style.overflow = 'hidden';
+    document.documentElement.classList.add('pd-lock');
+    pdIn.scrollTop = 0;
+    setTimeout(() => $('#pdClose').focus({preventScroll:true}), 60);
+  }
+  function closePD(){
+    pd.classList.remove('on'); pdScrim.classList.remove('on'); pd.setAttribute('aria-hidden','true');
+    document.documentElement.style.overflow = '';
+    document.documentElement.classList.remove('pd-lock');
+    if (lastFocus) lastFocus.focus({preventScroll:true});
+  }
+  $('#pdClose').addEventListener('click', closePD);
+  pdScrim.addEventListener('click', closePD);
+  pd.addEventListener('click', e => {
+    const sw = e.target.closest('.sw');
+    if (sw){ cur = byId[sw.dataset.v]; renderPD(); return; }
+    const sz = e.target.closest('.pd-size');
+    if (sz){ curSize = sz.dataset.s; $('#pdMsg').textContent = ''; renderPD(); return; }
+    const vw = e.target.closest('.pd-view');
+    if (vw){ view = vw.dataset.view; renderPD(); return; }
+    if (e.target.closest('#pdAdd')){
+      if (!curSize){ $('#pdMsg').textContent = 'Escolha um tamanho antes de adicionar.'; pd.querySelector('.pd-size').focus(); return; }
+      addToCart(cur, curSize);
+      const b = $('#pdAdd'), old = b.innerHTML;
+      b.innerHTML = 'Adicionado ✓';
+      setTimeout(() => { closePD(); b.innerHTML = old; }, 650);
+    }
+  });
+
+  document.addEventListener('click', e => {
+    const s = e.target.closest('.size');
+    if (s){
+      const card = s.closest('.card'), p = byId[card.dataset.id];
+      addToCart(p, s.dataset.size);
+      const old = s.textContent; s.classList.add('ok'); s.textContent = '✓';
+      setTimeout(()=>{ s.classList.remove('ok'); s.textContent = old; card.classList.remove('qa-open'); }, 900);
+      return;
+    }
+    const qb = e.target.closest('.qa-btn');
+    if (qb){ const c = qb.closest('.card'); closeQuick(); c.classList.add('qa-open'); return; }
+    if (e.target.closest('.qa-x')){ closeQuick(); return; }
+    const hit = e.target.closest('.card .media, .card .info');
+    if (hit && !e.target.closest('.quick')){
+      const c = hit.closest('.card');
+      if (c.classList.contains('qa-open')){ closeQuick(); return; }
+      openPD(c.dataset.id, c.querySelector('.pd-open'));
+      return;
+    }
+    if (!e.target.closest('.card')) closeQuick();
+    const rm = e.target.closest('[data-rm]');
+    if (rm){ cart.splice(+rm.dataset.rm,1); renderCart(); return; }
+    if (e.target.closest('#emptyLink')) closeBag();
+  });
+  $('#bagBtn').addEventListener('click', openBag);
+  $('#closeBag').addEventListener('click', closeBag);
+  scrim.addEventListener('click', closeBag);
+  addEventListener('keydown', e => {
+    if (e.key === 'Escape'){
+      if (pd.classList.contains('on')) closePD();
+      else if (drawer.classList.contains('on')) closeBag();
+      else closeQuick();
+    }
+    // mantém o foco dentro da aba de detalhes
+    if (e.key === 'Tab' && pd.classList.contains('on')){
+      const f = [...pd.querySelectorAll('button, summary')].filter(el => el.offsetParent !== null);
+      const first = f[0], last = f[f.length-1];
+      if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    }
+  });
+
+  /* ---------- MARQUEE ---------- */
+  const items = ['Drop 001 disponível','Envio para todo o Brasil','Edição limitada','Assista ao vivo no YouTube','Trocas em até 30 dias'];
+  const run = items.map(t=>`<span>${t}</span><b>✦</b>`).join('');
+  $('#mq').innerHTML = run + run + run + run;
+
+  /* ---------- MANIFESTO (word by word) ---------- */
+  const man = $('#manifesto');
+  man.innerHTML = man.textContent.trim().split(/\s+/).map(w=>`<span class="w">${w}</span>`).join(' ');
+  const words = [...man.querySelectorAll('.w')];
+
+  /* ---------- HEADER + PARALLAX + MANIFESTO on scroll ---------- */
+  const hdr = $('#hdr');
+  let lastY = scrollY, ticking = false, px = 0, py = 0;
+  const finePointer = matchMedia('(hover:hover) and (pointer:fine)').matches;
+  function onScroll(){
+    const y = scrollY;
+    hdr.classList.toggle('solid', y > 40);
+    const hide = y > lastY && y > 240 && !drawer.classList.contains('on');
+    hdr.classList.toggle('hide', hide);
+    document.body.classList.toggle('hdr-shown', !hide);
+    lastY = y;
+    if (!RM){
+      const h = innerHeight;
+      const r = man.getBoundingClientRect();
+      const prog = Math.min(1, Math.max(0, (h*0.85 - r.top) / (r.height + h*0.35)));
+      const on = Math.round(prog * words.length);
+      words.forEach((w,i)=>w.classList.toggle('on', i < on));
+    }
+    ticking = false;
+  }
+  addEventListener('scroll', () => { if(!ticking){ requestAnimationFrame(onScroll); ticking = true; } }, {passive:true});
+  onScroll();
+  if (RM) words.forEach(w=>w.classList.add('on'));
+
+  /* ---------- MAGNETIC CTA ---------- */
+  if (finePointer && !RM){
+    const b = $('#ctaMain');
+    b.addEventListener('pointermove', e => { const r = b.getBoundingClientRect();
+      b.style.transform = `translate(${(e.clientX-r.left-r.width/2)*.12}px, ${(e.clientY-r.top-r.height/2)*.2}px)`; });
+    b.addEventListener('pointerleave', () => { b.style.transition = 'transform .5s cubic-bezier(.22,1,.36,1), color .35s'; b.style.transform = ''; });
+  }
+
+
+  /* ---------- REVEAL (only off-screen elements) ---------- */
+  if (!RM && 'IntersectionObserver' in window){
+    const targets = [...document.querySelectorAll('.rv-me, #dropGrid .card, .cols > div, .news > *')];
+    const io = new IntersectionObserver(es => es.forEach(en => { if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); } }), {threshold:.15});
+    targets.forEach((el,i) => {
+      if (el.getBoundingClientRect().top > innerHeight){
+        el.classList.add('rv');
+        const sib = el.parentElement ? [...el.parentElement.children].indexOf(el) : 0;
+        el.style.transitionDelay = Math.min(sib,5)*60 + 'ms';
+        io.observe(el);
+      }
+    });
+  }
+
+  /* ---------- NEWSLETTER ---------- */
+  $('#newsForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const em = $('#email').value.trim(), msg = $('#formMsg');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){ msg.textContent = 'Digite um e-mail válido, tipo nome@email.com.'; $('#email').focus(); return; }
+    if (!$('#lgpd').checked){ msg.textContent = 'Marque a caixa de consentimento para continuar.'; return; }
+    msg.textContent = 'Pronto. Você vai receber o aviso do próximo drop.';
+    e.target.reset();
+  });
+})();
+</script>
