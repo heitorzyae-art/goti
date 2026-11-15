@@ -57,7 +57,6 @@ h1,h2,h3,p{margin:0}
 /* ---------- HEADER ---------- */
 .hdr{position:fixed;top:0;left:0;right:0;z-index:50;padding-top:env(safe-area-inset-top,0px);transition:transform .45s var(--ease),background .3s,border-color .3s;border-bottom:1px solid transparent}
 .hdr.solid{background:rgba(10,10,10,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-color:var(--line)}
-.hdr.hide{transform:translateY(-100%)}
 .hdr-in{height:60px;display:flex;align-items:center;gap:clamp(12px,3vw,24px)}
 .logo{flex:none;font-family:var(--display);font-variation-settings:"wdth" 125;font-stretch:125%;font-weight:900;font-size:clamp(1.15rem,4vw,1.35rem);letter-spacing:-.02em;min-height:44px;display:inline-flex;align-items:center}
 .nav{display:flex;gap:clamp(12px,3vw,28px);margin-left:clamp(0px,2vw,16px);min-width:0}
@@ -275,11 +274,6 @@ html.pd-lock .hdr,html.pd-lock main,html.pd-lock .foot,html.pd-lock .grain{filte
 .manifesto{font-size:clamp(2.2rem,6.4vw,5.6rem);max-width:16ch;margin-bottom:clamp(40px,6vw,80px)}
 .manifesto .w{opacity:.14;transition:opacity .25s linear}
 .manifesto .w.on{opacity:1}
-.sobre-grid{display:grid;gap:32px}
-.sobre-img{aspect-ratio:4/3;max-width:100%;background:#d9d9d6;position:relative;display:grid;place-items:center;color:#666;overflow:hidden}
-.sobre-img{background:#111}
-.sobre-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:62% 38%;filter:grayscale(1) contrast(1.05)}
-.sobre-img .corner{position:absolute;z-index:1;left:16px;right:16px;bottom:14px;color:var(--paper);text-shadow:0 1px 8px rgba(0,0,0,.6)}
 .sobre-txt{display:grid;gap:18px;align-content:start;max-width:58ch;font-size:1.05rem}
 .sobre-txt p{color:#333}
 .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid #c9c9c6;margin-top:12px}
@@ -288,8 +282,6 @@ html.pd-lock .hdr,html.pd-lock main,html.pd-lock .foot,html.pd-lock .grain{filte
 .stat b{font-family:var(--display);font-variation-settings:"wdth" 125;font-stretch:125%;font-weight:800;font-size:clamp(1.2rem,5vw,2.4rem);line-height:1;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 .stat span{color:#666;font-size:.7rem}
 .ph-note{font-family:var(--mono);font-size:.75rem;color:#777}
-@media (min-width:768px){.sobre-img{aspect-ratio:16/9}}
-@media (min-width:1024px){.sobre-grid{grid-template-columns:1.1fr 1fr;gap:64px}.sobre-img{aspect-ratio:4/3}}
 
 /* ---------- LOJA ---------- */
 .filters{position:relative;background:var(--ink);border-block:1px solid var(--line);margin-bottom:24px}
@@ -444,20 +436,14 @@ html.pd-lock .hdr,html.pd-lock main,html.pd-lock .foot,html.pd-lock .grain{filte
     <div class="wrap">
       <span class="eyebrow mono">Sobre a GOTI</span>
       <p class="disp manifesto" id="manifesto">Para os verdadeiros gotis da live.</p>
-      <div class="sobre-grid">
-        <div class="sobre-img rv-me">
-          <img src="sobre-yuri22.jpg" width="1445" height="1088" loading="lazy" decoding="async" alt="Yuri22 sorrindo, de fone e microfone, durante uma transmissão">
-          <div class="corner mono"><span>Bastidores</span><span>Ao vivo</span></div>
-        </div>
-        <div class="sobre-txt rv-me">
-          <p class="ph-note">[ Significado de GOTI: texto da marca entra aqui ]</p>
-          <p>A GOTI nasceu dentro da live. Cada peça carrega uma referência que só quem acompanha o Yuri22 vai pegar, e um corte que funciona pra qualquer pessoa na rua.</p>
-          <p>Poucas peças por drop, tecido pesado, estampa sem excesso. Quando acaba, acaba.</p>
-          <div class="stats">
-            <div class="stat"><b>2,5M</b><span class="mono">Seguidores</span></div>
-            <div class="stat"><b>01</b><span class="mono">Drop lançado</span></div>
-            <div class="stat"><b>05</b><span class="mono">Peças por drop</span></div>
-          </div>
+      <div class="sobre-txt rv-me">
+        <p class="ph-note">[ Significado de GOTI: texto da marca entra aqui ]</p>
+        <p>A GOTI nasceu dentro da live. Cada peça carrega uma referência que só quem acompanha o Yuri22 vai pegar, e um corte que funciona pra qualquer pessoa na rua.</p>
+        <p>Poucas peças por drop, tecido pesado, estampa sem excesso. Quando acaba, acaba.</p>
+        <div class="stats">
+          <div class="stat"><b>2,5M</b><span class="mono">Seguidores</span></div>
+          <div class="stat"><b>01</b><span class="mono">Drop lançado</span></div>
+          <div class="stat"><b>05</b><span class="mono">Peças por drop</span></div>
         </div>
       </div>
     </div>
@@ -832,15 +818,10 @@ html.pd-lock .hdr,html.pd-lock main,html.pd-lock .foot,html.pd-lock .grain{filte
 
   /* ---------- HEADER + PARALLAX + MANIFESTO on scroll ---------- */
   const hdr = $('#hdr');
-  let lastY = scrollY, ticking = false, px = 0, py = 0;
-  const finePointer = matchMedia('(hover:hover) and (pointer:fine)').matches;
+  let ticking = false, px = 0, py = 0;
   function onScroll(){
     const y = scrollY;
     hdr.classList.toggle('solid', y > 40);
-    const hide = y > lastY && y > 240 && !drawer.classList.contains('on');
-    hdr.classList.toggle('hide', hide);
-    document.body.classList.toggle('hdr-shown', !hide);
-    lastY = y;
     if (!RM){
       const h = innerHeight;
       const r = man.getBoundingClientRect();
@@ -853,14 +834,6 @@ html.pd-lock .hdr,html.pd-lock main,html.pd-lock .foot,html.pd-lock .grain{filte
   addEventListener('scroll', () => { if(!ticking){ requestAnimationFrame(onScroll); ticking = true; } }, {passive:true});
   onScroll();
   if (RM) words.forEach(w=>w.classList.add('on'));
-
-  /* ---------- MAGNETIC CTA ---------- */
-  if (finePointer && !RM){
-    const b = $('#ctaMain');
-    b.addEventListener('pointermove', e => { const r = b.getBoundingClientRect();
-      b.style.transform = `translate(${(e.clientX-r.left-r.width/2)*.12}px, ${(e.clientY-r.top-r.height/2)*.2}px)`; });
-    b.addEventListener('pointerleave', () => { b.style.transition = 'transform .5s cubic-bezier(.22,1,.36,1), color .35s'; b.style.transform = ''; });
-  }
 
 
   /* ---------- REVEAL (only off-screen elements) ---------- */
